@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+region_validation_report.json
+.venv/
