@@ -1,16 +1,17 @@
 // 选区汇总卡（FR-08 / AC-03）：权威汇总取自携带相同筛选参数的 /kpi，
-// 「已选 N 项」仅作本地 UI 计数，不用前端聚合替代服务端汇总。
+// 「已选中 N 家」为真实门店选择集合计数（仅用于导出），不用前端聚合替代服务端汇总。
 import type { KpiResult } from '../api/types';
 import { formatInt } from '../format';
 
 interface SummaryCardProps {
   kpi: KpiResult | null;
   loading: boolean;
-  selectedCount?: number | null;
+  selectedStoreIds?: string[];
 }
 
-export function SummaryCard({ kpi, loading, selectedCount }: SummaryCardProps) {
+export function SummaryCard({ kpi, loading, selectedStoreIds }: SummaryCardProps) {
   const approximate = kpi?.competitor?.is_approximate ?? false;
+  const selectedCount = selectedStoreIds?.length ?? 0;
   return (
     <section className="summary-card" aria-label="选区汇总" aria-busy={loading}>
       <h3>选区汇总</h3>
@@ -39,11 +40,15 @@ export function SummaryCard({ kpi, loading, selectedCount }: SummaryCardProps) {
           <dd>{formatInt(kpi?.competitor?.count)}</dd>
         </div>
       </dl>
-      {selectedCount !== null && selectedCount !== undefined ? (
+      {selectedCount > 0 ? (
         <p className="selected-count" aria-live="polite">
-          已选中 {formatInt(selectedCount)} 项（仅用于导出）
+          已选中 {formatInt(selectedCount)} 家（仅用于导出）
         </p>
-      ) : null}
+      ) : (
+        <p className="selected-count" aria-live="polite">
+          未选择门店（导出按当前筛选口径）
+        </p>
+      )}
     </section>
   );
 }

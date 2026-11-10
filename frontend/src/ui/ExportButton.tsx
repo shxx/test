@@ -51,11 +51,18 @@ export function ExportButton({ token, selectedStoreIds, onSessionError }: Export
     }
   }
 
+  const hasSelection = (selectedStoreIds?.length ?? 0) > 0;
+
   return (
     <div className="export-zone">
       <button type="button" onClick={handleExport} disabled={busy}>
         {busy ? '导出中…' : '导出 CSV'}
       </button>
+      <span className="export-hint" aria-live="polite">
+        {hasSelection
+          ? `已选中 ${selectedStoreIds!.length.toLocaleString('zh-CN')} 家，导出仅包含所选门店`
+          : '按当前筛选口径导出'}
+      </span>
       {status ? (
         <p className={status.kind === 'ok' ? 'export-ok' : 'export-error'} role="status">
           {status.text}

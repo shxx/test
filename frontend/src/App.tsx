@@ -122,28 +122,43 @@ function MainBody({ token, domain, onLogout, onSessionError }: Omit<MainInterfac
   const { state, dispatch } = useFilter();
   const data = useLedgerData(token, state, onSessionError);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedCount, setSelectedCount] = useState<number | null>(null);
+  const [selectedStoreIds, setSelectedStoreIds] = useState<string[]>([]);
+  const [mapSignatureMismatch, setMapSignatureMismatch] = useState(false);
 
   const openDetail = useCallback((id: string) => setSelectedId(id), []);
   const closeDetail = useCallback(() => setSelectedId(null), []);
 
-  // Esc 取消当前选择（无抽屉打开时清省份/城市，等价地图 Esc 取消）。
+  // data_version 变化时清空坐标缓存，防止口径切换串坐标（design.md §2.5 / L-3）。
+  useEffect(() => {
+    resetCoordCache();
+  }, [domain.data_version]);
+
+  // Esc 逐级取消（无抽屉打开时）：先清门店选择集合，再清城市，再清省份（L-2）。
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key !== 'Escape' || selectedId) return;
-      if (state.province || state.city) {
-        dispatch({ type: 'set', key: 'province', value: null });
+      if (selectedStoreIds.length > 0) {
+        setSelectedStoreIds([]);
+        return;
+      }
+      if (state.city) {
         dispatch({ type: 'set', key: 'city', value: null });
+        return;
+      }
+      if (state.province) {
+        dispatch({ type: 'set', key: 'province', value: null });
       }
     }
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [selectedId, state.province, state.city, dispatch]);
+  }, [selectedId, selectedStoreIds, state.province, state.city, dispatch]);
+
+  const signaturesConsistent = data.signaturesConsistent && !mapSignatureMismatch;
 
   return (
     <div className="app-shell">
       <DataScopeBar domain={domain} onLogout={onLogout} />
-      {!data.signaturesConsistent ? (
+      {!signaturesConsistent ? (
         <p className="consistency-warning" role="alert">
           各视图口径签名不一致，已暂停渲染以提示排查（filter_signature 不一致）。
         </p>
@@ -160,13 +175,15 @@ function MainBody({ token, domain, onLogout, onSessionError }: Omit<MainInterfac
             token={token}
             domain={domain}
             kpi={data.kpi}
+            selectedStoreIds={selectedStoreIds}
+            onSelectionChange={setSelectedStoreIds}
             onOpenDetail={openDetail}
             onSessionError={onSessionError}
-            onSelectedCountChange={setSelectedCount}
+            onSignatureMismatch={setMapSignatureMismatch}
           />
-          <SummaryCard kpi={data.kpi} loading={data.loading} selectedCount={selectedCount} />
+          <SummaryCard kpi={data.kpi} loading={data.loading} selectedStoreIds={selectedStoreIds} />
           <KpiCards kpi={data.kpi} loading={data.loading} />
-          <ExportButton token={token} onSessionError={onSessionError} />
+          <ExportButton token={token} selectedStoreIds={selectedStoreIds} onSessionError={onSessionError} />
           <LedgerTable stores={data.stores} loading={data.loading} onOpenDetail={openDetail} />
         </main>
       </div>

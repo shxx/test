@@ -93,3 +93,15 @@ export function filtersFingerprint(state: FilterState): string {
     state.pageSize,
   ]);
 }
+
+// KPI 指纹：不含 page/pageSize（聚合结果与分页无关），避免翻页冗余重拉 KPI（M-1）。
+export function kpiFingerprint(state: FilterState): string {
+  return JSON.stringify([
+    state.province,
+    state.city,
+    state.block,
+    state.operate_type,
+    state.sort,
+    state.order,
+  ]);
+}

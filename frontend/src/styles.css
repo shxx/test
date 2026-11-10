@@ -323,6 +323,24 @@ select {
   flex-wrap: wrap;
 }
 
+.map-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.map-selection-hint {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.map-legend {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
 .breadcrumb {
   display: flex;
   gap: 0.25rem;
@@ -513,6 +531,11 @@ th {
   flex-wrap: wrap;
 }
 
+.export-hint {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
 .export-zone button {
   padding: 0.5rem 0.9rem;
   background: var(--color-primary);
@@ -583,7 +606,33 @@ th {
 /* ---------- 响应式 ---------- */
 @media (min-width: 1280px) {
   .layout {
-    grid-template-columns: 260px 1fr;
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+  /* 三栏近似：左筛选（.layout 第一列）+ 地图（左）+ 右信息（汇总/KPI/导出/台账） */
+  .main-col {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    grid-template-areas:
+      'map summary'
+      'map kpi'
+      'map export'
+      'map table';
+    align-items: start;
+  }
+  .map-panel {
+    grid-area: map;
+  }
+  .summary-card {
+    grid-area: summary;
+  }
+  .kpi-cards {
+    grid-area: kpi;
+  }
+  .export-zone {
+    grid-area: export;
+  }
+  .ledger-table {
+    grid-area: table;
   }
 }
 
